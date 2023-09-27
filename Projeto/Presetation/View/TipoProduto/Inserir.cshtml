@@ -1,0 +1,52 @@
+@{
+    Layout = null;
+}
+@using Portal.Domain.Resources.Fields
+@using Portal.Domain.Resources.Icons
+@using Portal.Web.Base.Helpers
+@model Portal.Web.ViewModel.TipoProduto.TipoProdutoViewModel
+
+@{
+    Layout = null;
+}
+
+<div class="divFormTipoProdutoCadastro">
+    @using (Html.BeginForm("Inserir", "TipoProduto", FormMethod.Post, new { id = "filterform_TipoProdutoAdicionar", empresa = ViewBag.Empresa }))
+    {
+        <div>
+            @Html.Action("Manter", "TipoProduto", new { model = Model, form = "filterform_TipoProdutoAdicionar", empresa = ViewBag.Empresa })
+            @Html.Toolbar(new List<MvcHtmlString> {
+                Html.ToolBarItemButton("btnAdicionar", Fields.Salvar, "padrao", Icons.AdicionarForms, "filterform_TipoProdutoAdicionar"),
+                Html.ToolBarItemButton("btnVoltar", Fields.Voltar, "padrao", Icons.Voltar),
+            })
+        </div>
+    }
+</div>
+<script>
+    $(document).ready(function () {
+        $(document).off('click', '#TelaAlteracaoTipoProduto #btnVoltar').on('click', '#TelaAlteracaoTipoProduto #btnVoltar', function (e) {
+            if (e.handled !== true) {
+                $("#gridTipoProduto").data("kendoGrid").dataSource.read();
+                $("#gridTipoProduto").data("kendoGrid").refresh();
+
+                $('#TelaAlteracaoTipoProduto').slideToggle(400, function () {
+                    $('#TelaTipoProduto').slideToggle(400);
+                    $('#TelaAlteracaoTipoProduto').empty();
+                    $('#TelaAlteracaoTipoProduto').removeAttr('style');
+                });
+                e.handled = true;
+            }
+            return false;
+        });
+        $(document).off('click', '#TelaAlteracaoTipoProduto #btnAdicionar').on('click', '#TelaAlteracaoTipoProduto #btnAdicionar', function (e) {
+            if (e.handled !== true) {
+                if (validarFormulario("filterform_TipoProdutoAdicionar")) {
+                    $('#TelaAlteracaoTipoProduto #btnAdicionar').closest('.toolbar-inner-inner').hide();
+                    checkData("salvarCadastro", "Cadastrar TipoProduto", "filterform_TipoProdutoAdicionar", "Inserir", "TipoProduto", "", "#TelaAlteracaoTipoProduto #btnVoltar");
+                }
+                e.handled = true;
+            }
+            return false;
+        });
+    });
+</script>

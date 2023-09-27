@@ -1,0 +1,16 @@
+@{
+    Layout = null;
+
+    var view = Html.Define();
+    var modelView = view.Define(Model);
+}
+@using Portal.Web.Base.Helpers
+@model Portal.Web.ViewModel.TipoProduto.TipoProdutoViewModel
+
+@(modelView)
+
+<script>
+    $(document).ready(function () {
+        iniciaForm("@((string)ViewBag.Form)");
+    })
+</script>

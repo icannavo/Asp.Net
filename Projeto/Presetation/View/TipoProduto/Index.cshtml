@@ -1,0 +1,178 @@
+@{
+    Layout = null;
+    var buscar = ((string)ViewBag.Buscar != "Buscar");
+}
+
+@using Kendo.Mvc.UI
+@using Portal.Domain.Resources.Fields
+@using Portal.Domain.Resources.Icons
+@using Portal.Web.Base.Helpers
+@using Portal.Web.ViewModel.TipoProduto
+@model TipoProdutoViewModel
+
+<div id="TelaTipoProduto@((string)ViewBag.Buscar)" class="divTela">
+    @using (Html.BeginForm("TipoProduto_UpdateFilter", "TipoProduto", FormMethod.Post, new
+    {
+        id =
+    "filterform_TipoProduto" + (string)ViewBag.Buscar,
+        empresa = ViewBag.Empresa
+    }))
+    {
+        @(Html.Kendo().PanelBar()
+            .Name("panelFiltroTipoProduto")
+            .ExpandMode(PanelBarExpandMode.Multiple)
+            .HtmlAttributes(new { style = "font-size: 12px;" })
+            .Items(it =>
+            it.Add()
+            .Text(Fields.ParametrosPesquisa)
+            .Expanded(true)
+            .Content(@<text>
+                <div style="width: 100%">
+                    <div class="tbItem2">
+                        <ul>
+                            <li class="tbHeader">@(Html.Label(Fields.Codigo + ":"))</li>
+                                <li class="tbValue">
+                                    @(Html.TextBoxFor(m => m.Codigo, new
+                                    {
+                                        @class = "textBoxForm",
+                                        @id = buscar ? "Chave" :
+                        "ChaveBuscar",
+                                        @maxlength = "100"
+                                    }))
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="tbQuebra"></div>
+                        <div class="tbItem2">
+                            <ul>
+                                <li class="tbHeader">@(Html.Label(Fields.Descricao + ":"))</li>
+                                <li class="tbValue">
+                                    @(Html.TextBoxFor(m => m.Descricao, new
+                                    {
+                                        @class = "textBoxForm",
+                                        @id = buscar ? "Descricao" :
+                        "DescricaoBuscar",
+                                        @maxlength = "100"
+                                    }))
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="tbQuebra"></div>
+                    </div>
+                    <div class="tbQuebra"></div>
+                    @Html.Toolbar(new List<MvcHtmlString>
+        {
+        Html.ToolBarItemButton("btnNovo", Fields.Novo, "padrao", Icons.Adicionar, null, null, buscar),
+        Html.ToolBarItemButton("btnFiltrar", Fields.Consultar, "padrao", Icons.Lupa, "filterform_TipoProduto" +
+        (string)ViewBag.Buscar),
+        }, true)
+                </text>)
+            ))
+
+    }
+
+    <br />
+    <div id="divGridTipoProdutoMenu@((string)ViewBag.Buscar)">
+        @(Html.Kendo().Grid<TipoProdutoViewModel>()
+            .Name("gridTipoProduto" + (string)ViewBag.Buscar)
+            .Columns(clm =>
+            {
+                clm.Template(@<text></text>)
+            .Width(35)
+            .ClientTemplate(
+            Html.ItemSelecaoBuscaGrid((string)ViewBag.Local, (string)ViewBag.JsonRetorno, (string)ViewBag.Form,
+            Fields.Selecionar, "padrao", Icons.Selecionar))
+            .Visible(!buscar);
+                clm.Template(@<text></text>).Width(35)
+            .ClientTemplate(Html.ItemBotaoGrid("TelaTipoProduto", "TelaAlteracaoTipoProduto",
+            "/TipoProduto/Editar?id=#=TipoProdutoId#", null, null, Fields.Editar, "padrao", Icons.Editar,
+            (string)ViewBag.Empresa))
+            .HtmlAttributes(new { style = "text-align: center;" })
+            .Visible(buscar);
+                clm.Bound(a => a.TipoProdutoId).Title(Fields.ID).Hidden(true);
+                clm.Bound(a => a.Chave).Title(Fields.Chave).Width(100);
+                clm.Bound(a => a.Codigo).Title(Fields.Codigo).Width(100);
+                clm.Bound(a => a.Descricao).Title(Fields.Descricao);
+            })
+            .Scrollable(scrollable => scrollable.Height("auto"))
+            .Reorderable(reorderable => reorderable.Columns(true))
+            .Resizable(resizable => resizable.Columns(true))
+            .Filterable()
+            .Sortable()
+            .Groupable()
+            .Selectable(a => a.Mode(GridSelectionMode.Single))
+            .ColumnMenu()
+            .Pageable(p => p.PageSizes(new int[] { 10, 20, 50, 100 }))
+            .Events(events => events.DataBound("onDataBoundGrid"))
+            .DataSource(datasource => datasource
+            .Ajax()
+            .PageSize(10)
+            .Read(read =>
+            {
+                read.Type(HttpVerbs.Post);
+                read.Action("Index_ConsultarGrid", "TipoProduto");
+
+            }
+            )
+            .Events(e => e.Error("onErrorGrid"))
+            ))
+
+    </div>
+</div>
+<div id="TelaAlteracaoTipoProduto@((string)ViewBag.Buscar)" class="divTela SubTela"></div>
+
+<style type="text/css">
+    #gridTipoProduto@((string)ViewBag.Buscar) {
+        font-size: 11px;
+    }
+
+    @if (!buscar)
+    {
+        <text>#gridTipoProduto@((string)ViewBag.Buscar).k-grid-content,
+        #gridTipoProduto@((string)ViewBag.Buscar).k-loading-image {
+            min-height: 270px !important;
+        }
+
+        </text>
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        $('#filterform_TipoProduto@((string)ViewBag.Buscar)').ajaxForm(function () {
+            var grid = $("#gridTipoProduto@((string)ViewBag.Buscar)").data("kendoGrid");
+            grid.dataSource.page(1);
+        });
+
+        $(document).off('click', '#TelaTipoProduto@((string)ViewBag.Buscar) #btnNovo').on('click', '#TelaTipoProduto@((string)ViewBag.Buscar) #btnNovo', function (e) {
+            if (e.handled !== true) {
+                checkData('carregaPagina', null, 'TelaTipoProduto', 'TelaAlteracaoTipoProduto@((string)ViewBag.Buscar)', '@(string.IsNullOrEmpty(ViewBag.Empresa) ? "" : "/" + ViewBag.Empresa)/TipoProduto/Inserir');
+                e.handled = true;
+            }
+            return false;
+        });
+
+        $(document).off('click', '#TelaTipoProduto@((string)ViewBag.Buscar) #btnFiltrar').on('click', '#TelaTipoProduto@((string)ViewBag.Buscar) #btnFiltrar', function (e) {
+            if (e.handled !== true) {
+                $('#' + $(this).attr('form-to-submit')).submit();
+                e.handled = true;
+            }
+            return false;
+        });
+
+    @if (!buscar)
+    {
+        <text>
+                    $(document).off('dblclick', '#gridTipoProduto@((string)ViewBag.Buscar) .k-grid-content tr').on('dblclick', '#gridTipoProduto@((string)ViewBag.Buscar) .k-grid-content tr', function() {
+                        $(this).find('.selectItemGrid').trigger('click');
+                });
+        </text>
+    }
+
+
+
+        var appInsights = window.appInsights || { trackPageView: function () { } }; appInsights.trackPageView("TipoProduto-Index");
+
+        iniciaForm("filterform_TipoProduto@((string)ViewBag.Buscar)", true);
+    });
+</script>
